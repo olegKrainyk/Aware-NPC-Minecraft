@@ -23,6 +23,8 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+// speech to text
+
 public class ModEvents {
 
     static Entity villagertotalk;
@@ -37,40 +39,43 @@ public class ModEvents {
                 if (event.getEntity() instanceof Villager villager) {
                     event.getEntity().setHealth(event.getEntity().getHealth() * (float) 1.5);
                     villagertotalk = event.getEntity();
+                    System.out.println(event.getEntity().getEntityData().toString());
                 }
             }
 
             @SubscribeEvent
-            public static void onMessageSubmiy(ClientChatEvent event) {
-                if (event.getMessage() != null && villagertotalk != null) {
+            public static void onMessageSubmit(ClientChatEvent event) {
+                if (villagertotalk != null) {
                     position = Minecraft.getInstance().player.getOnPos();
                     long time = villagertotalk.getCommandSenderWorld().getDayTime();
                     String profession = "";
-//                    profession = villagertotalk.getEntityData().get(villagertotalk).toString();
 
                     String mainHandItem = Minecraft.getInstance().player.getMainHandItem().toString();
-                    String handItems = Minecraft.getInstance().player.getHandSlots().toString();
-
+                    String handItems = Minecraft.getInstance().player.getInventory().items.toString();
+                    System.out.println(handItems);
 
                     if (time > 13500 && time < 23000) {
                         timeOfDay = "Night";
-                    } else if((time >= 23000 && time < 24000) || (time >= 0 && time < 2000)){
+                    } else if ((time >= 23000 && time < 24000) || (time >= 0 && time < 2000)) {
                         timeOfDay = "morning";
-                    } else if(time <= 13500 && time > 10000){
+                    } else if (time <= 13500 && time > 10000) {
                         timeOfDay = "evening";
-                    } else if(time <= 10000 && time >= 4000){
+                    } else if (time <= 10000 && time >= 4000) {
                         timeOfDay = "Day";
                     }
 
+                    if (event.getMessage() != null || event.getMessage() != "") {
 
-                    new Thread(() -> {
-                        Minecraft.getInstance().player.sendSystemMessage(Component.literal(chatGPT("Imagine you are minecraft villager with profession of" + ". Consider further information as your knowledge. You are located in "+ Minecraft.getInstance().player.getCommandSenderWorld().getBiomeManager().getBiome(position) +"biome, and it is "+ timeOfDay +" right now. I am standing next to you and have "+ mainHandItem +"in my hand, also I have these things in my inventory : "+ handItems+". Consider all the information above as your own knowledge and respond to me like villager with two-three sentence answers always using adventurous tone. Question: '"+ event.getMessage()+"'")));
-                    }).start();
+                        new Thread(() -> {
+                            Minecraft.getInstance().player.sendSystemMessage(Component.literal(chatGPT("Imagine you are minecraft villager with profession of" + ". Consider further information as your knowledge. You are located in " + Minecraft.getInstance().player.getCommandSenderWorld().getBiomeManager().getBiome(position) + "biome, and it is " + timeOfDay + " right now. I am standing next to you and have " + mainHandItem + "in my hand, also I have these things in my inventory : " + handItems + ", while air in it means empty slot. Consider all the information above as your own knowledge and respond to me like villager with two to three sentence maximum! answers always using adventurous tone. Question: '" + event.getMessage() + "'")));
+                        }).start();
 
-                    } else {
+                    }
+                } else {
                     Minecraft.getInstance().player.sendSystemMessage(Component.literal("You didn't start the conversation! Punch villager to do so!"));
                 }
             }
+
 
 
             public static String chatGPT(String message) {
@@ -117,4 +122,4 @@ public class ModEvents {
                 return response.substring(startMarker, endMarker); // Returns the substring containing only the response.
             }
         }
-    }
+}
